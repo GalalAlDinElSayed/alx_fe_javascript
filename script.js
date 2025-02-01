@@ -1,71 +1,46 @@
-// Array to store quotes
-let quotes = [];
+// مصفوفة من الاقتباسات
+let quotes = [
+  { text: "The best way to predict the future is to create it.", category: "Motivation" },
+  { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", category: "Motivation" },
+  { text: "In the end, it's not the years in your life that count, it's the life in your years.", category: "Life" }
+];
 
-// Function to load quotes from local storage
-function loadQuotes() {
-    const storedQuotes = localStorage.getItem('quotes');
-    if (storedQuotes) {
-        quotes = JSON.parse(storedQuotes);
-    }
-    displayRandomQuote();
-}
-
-// Function to save quotes to local storage
-function saveQuotes() {
-    localStorage.setItem('quotes', JSON.stringify(quotes));
-}
-
-// Function to display a random quote
+// دالة لاختيار الاقتباس العشوائي
 function displayRandomQuote() {
-    if (quotes.length === 0) {
-        document.getElementById('quoteDisplay').innerText = "No quotes available.";
-    } else {
-        const randomIndex = Math.floor(Math.random() * quotes.length);
-        const quote = quotes[randomIndex];
-        document.getElementById('quoteDisplay').innerText = `"${quote.text}" - ${quote.category}`;
-    }
+  const randomIndex = Math.floor(Math.random() * quotes.length); // اختيار فهرس عشوائي
+  const quote = quotes[randomIndex]; // جلب الاقتباس العشوائي
+
+  // تحديث المحتوى في الـ DOM
+  document.getElementById('quoteDisplay').innerHTML = `
+    <p>"${quote.text}"</p>
+    <p><em>Category: ${quote.category}</em></p>
+  `;
 }
 
-// Function to add a new quote
+// دالة لإضافة اقتباس جديد
 function addQuote() {
-    const quoteText = document.getElementById('newQuoteText').value;
-    const quoteCategory = document.getElementById('newQuoteCategory').value;
+  const newQuoteText = document.getElementById('newQuoteText').value; // جلب النص من الحقل
+  const newQuoteCategory = document.getElementById('newQuoteCategory').value; // جلب الفئة من الحقل
 
-    if (quoteText && quoteCategory) {
-        const newQuote = { text: quoteText, category: quoteCategory };
-        quotes.push(newQuote);
-        saveQuotes();
-        document.getElementById('newQuoteText').value = '';
-        document.getElementById('newQuoteCategory').value = '';
-        displayRandomQuote();
-    }
-}
-
-// Function to export quotes to JSON
-function exportToJson() {
-    const jsonStr = JSON.stringify(quotes, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'quotes.json';
-    link.click();
-}
-
-// Function to import quotes from a JSON file
-function importFromJsonFile(event) {
-    const fileReader = new FileReader();
-    fileReader.onload = function(event) {
-        const importedQuotes = JSON.parse(event.target.result);
-        quotes.push(...importedQuotes);
-        saveQuotes();
-        displayRandomQuote();
-        alert('Quotes imported successfully!');
+  if (newQuoteText && newQuoteCategory) { // التأكد من أن الحقول غير فارغة
+    const newQuote = {
+      text: newQuoteText,
+      category: newQuoteCategory
     };
-    fileReader.readAsText(event.target.files[0]);
+
+    quotes.push(newQuote); // إضافة الاقتباس الجديد إلى المصفوفة
+    displayRandomQuote(); // عرض الاقتباس الجديد العشوائي
+
+    // مسح الحقول بعد الإضافة
+    document.getElementById('newQuoteText').value = '';
+    document.getElementById('newQuoteCategory').value = '';
+  } else {
+    alert("Please fill in both fields!"); // إذا كانت الحقول فارغة
+  }
 }
 
-// Load quotes from local storage when the page loads
-window.onload = loadQuotes;
-
-// Button to show a random quote
+// إضافة مستمع الحدث للزر
 document.getElementById('newQuote').addEventListener('click', displayRandomQuote);
+
+// تحميل الاقتباس العشوائي عند بدء الصفحة
+window.onload = displayRandomQuote;
