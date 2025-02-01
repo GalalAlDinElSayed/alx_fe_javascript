@@ -66,12 +66,37 @@ function addQuote() {
 
     if (newQuoteText && newQuoteCategory) {
         const newQuote = { text: newQuoteText, category: newQuoteCategory };
+
+        // Add the new quote to the local quotes array
         quotes.push(newQuote);
         saveQuotes();
+
+        // Post the new quote to the server (mock API)
+        postQuoteToServer(newQuote);
+
+        // Update the categories dropdown
         populateCategories();
+
         alert("Quote added!");
     } else {
         alert("Please enter both quote and category.");
+    }
+}
+
+// Function to post a new quote to the server (mock API)
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(quote)
+        });
+        const data = await response.json();
+        console.log('Quote successfully posted to server:', data);
+    } catch (error) {
+        console.error('Error posting quote to server:', error);
     }
 }
 
