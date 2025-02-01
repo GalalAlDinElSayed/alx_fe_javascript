@@ -5,20 +5,22 @@ let syncInProgress = false;
 // Periodically check for new quotes from the server every 30 seconds
 setInterval(syncQuotes, 30000);
 
-// Function to simulate fetching quotes from a mock server
-function fetchQuotesFromServer() {
+// Function to simulate fetching quotes from a mock server using async/await
+async function fetchQuotesFromServer() {
     if (syncInProgress) return; // Prevent overlapping syncs
     syncInProgress = true;
 
-    // Simulate fetching data from a mock API (JSONPlaceholder or another mock API)
-    fetch('https://jsonplaceholder.typicode.com/posts') 
-        .then(response => response.json())
-        .then(data => {
-            serverQuotes = data;
-            syncQuotes();
-        })
-        .catch(error => console.error('Error fetching data from server:', error))
-        .finally(() => syncInProgress = false);
+    try {
+        // Simulate fetching data from a mock API (JSONPlaceholder or another mock API)
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+        const data = await response.json();
+        serverQuotes = data;
+        syncQuotes();
+    } catch (error) {
+        console.error('Error fetching data from server:', error);
+    } finally {
+        syncInProgress = false;
+    }
 }
 
 // Function to sync the local quotes with the server quotes
