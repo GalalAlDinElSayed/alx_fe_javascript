@@ -1,46 +1,91 @@
-// مصفوفة من الاقتباسات
-let quotes = [
-  { text: "The best way to predict the future is to create it.", category: "Motivation" },
-  { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", category: "Motivation" },
-  { text: "In the end, it's not the years in your life that count, it's the life in your years.", category: "Life" }
-];
+// Initial quotes array
+let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
 
-// دالة لاختيار الاقتباس العشوائي
-function displayRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * quotes.length); // اختيار فهرس عشوائي
-  const quote = quotes[randomIndex]; // جلب الاقتباس العشوائي
+// Load the quotes and selected category from local storage on page load
+document.addEventListener('DOMContentLoaded', () => {
+  // Load the last selected category from local storage
+  const lastSelectedCategory = localStorage.getItem('lastSelectedCategory') || 'all';
+  document.getElementById('categoryFilter').value = lastSelectedCategory;
+  populateCategories();
+  filterQuotes(); // Display quotes based on the selected category
+});
 
-  // تحديث المحتوى في الـ DOM
-  document.getElementById('quoteDisplay').innerHTML = `
-    <p>"${quote.text}"</p>
-    <p><em>Category: ${quote.category}</em></p>
-  `;
+// Function to display a random quote
+function showRandomQuote() {
+  if (quotes.length === 0) {
+    document.getElementById('quoteDisplay').innerHTML = 'No quotes available.';
+    return;
+  }
+  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+  document.getElementById('quoteDisplay').innerHTML = `${randomQuote.text} - ${randomQuote.category}`;
 }
 
-// دالة لإضافة اقتباس جديد
+// Function to add a new quote
 function addQuote() {
-  const newQuoteText = document.getElementById('newQuoteText').value; // جلب النص من الحقل
-  const newQuoteCategory = document.getElementById('newQuoteCategory').value; // جلب الفئة من الحقل
+  const newQuoteText = document.getElementById('newQuoteText').value;
+  const newQuoteCategory = document.getElementById('newQuoteCategory').value;
 
-  if (newQuoteText && newQuoteCategory) { // التأكد من أن الحقول غير فارغة
-    const newQuote = {
-      text: newQuoteText,
-      category: newQuoteCategory
-    };
+  if (newQuoteText && newQuoteCategory) {
+    const newQuote = { text: newQuoteText, category: newQuoteCategory };
+    quotes.push(newQuote);
 
-    quotes.push(newQuote); // إضافة الاقتباس الجديد إلى المصفوفة
-    displayRandomQuote(); // عرض الاقتباس الجديد العشوائي
+    // Save the updated quotes array in local storage
+    localStorage.setItem('quotes', JSON.stringify(quotes));
 
-    // مسح الحقول بعد الإضافة
+    // Update the categories in the dropdown
+    populateCategories();
+
+    // Clear the input fields
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
-  } else {
-    alert("Please fill in both fields!"); // إذا كانت الحقول فارغة
+
+    filterQuotes(); // Refresh the displayed quotes
   }
 }
 
-// إضافة مستمع الحدث للزر
-document.getElementById('newQuote').addEventListener('click', displayRandomQuote);
+// Function to populate categories dynamically
+function populateCategories() {
+  const categoryFilter = document.getElementById('categoryFilter');
+  const categories = [...new Set(quotes.map(quote => quote.category))]; // Extract unique categories
+  categories.forEach(category => {
+    if (![...categoryFilter.options].some(option => option.value === category)) {
+      const option = document.createElement('option');
+      option.value = category;
+      option.textContent = category;
+      categoryFilter.appendChild(option);
+    }
+  });
+}
 
-// تحميل الاقتباس العشوائي عند بدء الصفحة
-window.onload = displayRandomQuote;
+// Function to filter quotes based on the selected category
+function filterQuotes() {
+  const selectedCategory = document.getElementById('categoryFilter').value;
+  
+  // Save the selected category to local storage
+  localStorage.setItem('lastSelectedCategory', selectedCategory);
+
+  let filteredQuotes = quotes;
+
+  if (selectedCategory !== 'all') {
+    filteredQuotes = quotes.filter(quote => quote.category === selectedCategory);
+  }
+
+  displayQuotes(filteredQuotes);
+}
+
+// Function to display quotes in the DOM
+function displayQuotes(filteredQuotes) {
+  if (filteredQuotes.length === 0) {
+    document.getElementById('quoteDisplay').innerHTML = 'No quotes available for this category.';
+    return;
+  }
+
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  quoteDisplay.innerHTML = '';
+
+  filteredQuotes.forEach(quote => {
+    const quoteElement = document.createElement('div');
+    quoteElement.textContent = `${quote.text} - ${quote.category}`;
+    quoteDisplay.appendChild(quoteElement);
+  });
+}
